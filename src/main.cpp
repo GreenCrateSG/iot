@@ -4,6 +4,14 @@
 #include <SPI.h>
 #include <SparkFunTMP102.h>  // Used to send and recieve specific information from our sensor
 #include <Wire.h>  // Used to establied serial communication on the I2C bus
+#include <arduino_sercret.h>
+
+/** Functions **/
+
+void temperature_sensor_init();
+void temperature_sensor_reading();
+
+/****/
 
 /**  Ethernet  **/
 
@@ -25,11 +33,15 @@ void DF_W5200_Init(void) {
   Ethernet.init(W5200_nSCS);
 }
 
-/***/
+/****/
 
 /**  TMP102  **/
 
+#define ALERT_PIN A3
+
 TMP102 sensor0;
+TMP102 sensor1;
+TMP102 sensor2;
 
 /****/
 
@@ -46,9 +58,9 @@ EthernetClient ethClient;
 PubSubClient client(server, 1883, callback, ethClient);
 
 // MQTT Config
-const char* mqtt_server = "192.168.8.115";
-const char* mqttUser = "GreenCrateSG";
-const char* mqttPassword = "GreenCrateSG";
+const char* mqtt_server = MQTT_SERVER;
+const char* mqttUser = MQTTUSER;
+const char* mqttPassword = MQTTPASSWORD;
 
 unsigned long lastMillis = 0;
 
@@ -74,11 +86,9 @@ void messageReceived(String& topic, String& payload) {
   // or push to a queue and handle it in the loop after calling `client.loop()`.
 }
 
-
-
 void setup() {
   // put your setup code here, to run once:
-  DF_W5200_Init(); // Init Ethernet
+  DF_W5200_Init();  // Init Ethernet
   Serial.begin(9600);
 
   // client.setServer(mqtt_server, 1883);
@@ -89,10 +99,10 @@ void setup() {
   Serial.print("server is at : ");
   Serial.println(Ethernet.localIP());
 
-  connect();
+  // connect();
 
+  temperature_sensor_init();
 }
-
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -106,5 +116,105 @@ void loop() {
   if (millis() - lastMillis > 1000) {
     lastMillis = millis();
     client.publish("/hello", "world.");
+
+    temperature_sensor_reading();
   }
+}
+
+void temperature_sensor_init() {
+  Wire.begin();  // Join I2C Bus
+
+  pinMode(ALERT_PIN, INPUT);  // Declare alertPin as an input
+
+  if (!sensor0.begin()) {
+    Serial.println("Cannot connect to TMP102 0.");
+    Serial.println("Is the board connected? Is the device ID correct?");
+    // while (1)
+    //   ;
+  }
+
+  if (!sensor1.begin(0x4A, Wire)) {
+    Serial.println("Cannot connect to TMP102 1.");
+    Serial.println("Is the board connected? Is the device ID correct?");
+    // while (1)
+    //   ;
+  }
+
+  if (!sensor2.begin(0x4B, Wire)) {
+    Serial.println("Cannot connect to TMP102 2.");
+    Serial.println("Is the board connected? Is the device ID correct?");
+    // while (1)
+    //   ;
+  }
+
+  Serial.println("Connected to TMP102!");
+  delay(100);
+  // sensor0.setConversionRate(0);
+  // sensor0.setHighTempC(85.0);  // set T_HIGH
+  // sensor0.setLowTempC(84.0);
+}
+
+void temperature_sensor_reading() {
+  // TMP102
+
+  float temperature;
+  boolean alertPinState, alertRegisterState;
+
+  // Turn sensor on to start temperature measurement.
+  // Current consumtion typically ~10uA.
+  sensor0.wakeup();
+
+  // read temperature data
+  temperature = sensor0.readTempC();
+  // temperature = sensor0.readTempC();
+
+  // Check for Alert
+  alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
+  alertRegisterState = sensor0.alert();    // read the Alert from register
+
+  // Place sensor in sleep mode to save power.
+  // Current consumtion typically <0.5uA.
+  sensor0.sleep();
+
+  // Print temperature and alarm state
+  Serial.print("Temperature 0: ");
+  Serial.println(temperature);
+
+  sensor1.wakeup();
+
+  // read temperature data
+  temperature = sensor1.readTempC();
+  // temperature = sensor0.readTempC();
+
+  // Check for Alert
+  alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
+  alertRegisterState = sensor1.alert();    // read the Alert from register
+
+  // Place sensor in sleep mode to save power.
+  // Current consumtion typically <0.5uA.
+  sensor1.sleep();
+
+  // Print temperature and alarm state
+  Serial.print("Temperature 1: ");
+  Serial.println(temperature);
+
+  sensor2.wakeup();
+
+  // read temperature data
+  temperature = sensor2.readTempC();
+  // temperature = sensor0.readTempC();
+
+  // Check for Alert
+  alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
+  alertRegisterState = sensor2.alert();    // read the Alert from register
+
+  // Place sensor in sleep mode to save power.
+  // Current consumtion typically <0.5uA.
+  sensor2.sleep();
+
+  // Print temperature and alarm state
+  Serial.print("Temperature 2: ");
+  Serial.println(temperature);
+
+  //
 }
