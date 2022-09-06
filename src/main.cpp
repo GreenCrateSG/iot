@@ -1,8 +1,11 @@
+#include <Adafruit_Sensor.h>
 #include <Arduino.h>
+#include <DHT.h>
+#include <DHT_U.h>
+#include <Digital_Light_TSL2561.h>
 #include <Ethernet.h>
 #include <PubSubClient.h>
 #include <SPI.h>
-#include <SparkFunTMP102.h>  // Used to send and recieve specific information from our sensor
 #include <Wire.h>  // Used to establied serial communication on the I2C bus
 #include <arduino_sercret.h>
 
@@ -10,6 +13,7 @@
 
 void temperature_sensor_init();
 void temperature_sensor_reading();
+void lux_sensor_init();
 
 /****/
 
@@ -37,11 +41,21 @@ void DF_W5200_Init(void) {
 
 /**  TMP102  **/
 
-#define ALERT_PIN A3
+// #define ALERT_PIN A3
 
-TMP102 sensor0;
-TMP102 sensor1;
-TMP102 sensor2;
+// TMP102 sensor0;
+// TMP102 sensor1;
+// TMP102 sensor2;
+
+/****/
+
+/** DHT11 **/
+
+#define DHTPINTOP 2             // Digital pin connected to the DHT sensor
+#define DHTPINBOTTOM 3             // Digital pin connected to the DHT sensor
+#define DHTTYPE    DHT11     // DHT 11
+DHT_Unified dhttop(DHTPINTOP, DHTTYPE);
+DHT_Unified dhtbottom(DHTPINBOTTOM, DHTTYPE);
 
 /****/
 
@@ -88,133 +102,232 @@ void messageReceived(String& topic, String& payload) {
 
 void setup() {
   // put your setup code here, to run once:
-  DF_W5200_Init();  // Init Ethernet
+  // DF_W5200_Init();  // Init Ethernet
   Serial.begin(9600);
 
   // client.setServer(mqtt_server, 1883);
   // client.setCallback(callback);
 
-  Ethernet.begin(mac, ip);
-  delay(1500);
-  Serial.print("server is at : ");
-  Serial.println(Ethernet.localIP());
+  // Ethernet.begin(mac, ip);
+  // delay(1500);
+  // Serial.print("server is at : ");
+  // Serial.println(Ethernet.localIP());
 
   // connect();
 
   temperature_sensor_init();
+  lux_sensor_init();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  client.loop();
+  // client.loop();
 
-  if (!client.connected()) {
-    connect();
-  }
+  // if (!client.connected()) {
+  //   connect();
+  // }
 
   // publish a message roughly every second.
   if (millis() - lastMillis > 1000) {
     lastMillis = millis();
-    client.publish("/hello", "world.");
+    // client.publish("/hello", "world.");
 
     temperature_sensor_reading();
+
+    // Serial.print("The Light value is: ");
+    // Serial.println(TSL2561.readVisibleLux());
+    delay(1000);
   }
+}
+
+
+
+void lux_sensor_init() {
+  Wire.begin();
+  TSL2561.init();
 }
 
 void temperature_sensor_init() {
-  Wire.begin();  // Join I2C Bus
 
-  pinMode(ALERT_PIN, INPUT);  // Declare alertPin as an input
+  dhttop.begin();
+  dhtbottom.begin();
+  // Serial.println(F("DHTxx Unified Sensor Example"));
+  // Print temperature sensor details.
+  sensor_t sensor;
+  dhttop.temperature().getSensor(&sensor);
+  // Serial.println(F("------------------------------------"));
+  // Serial.println(F("Temperature Sensor"));
+  // Serial.print(F("Sensor Type: "));
+  // Serial.println(sensor.name);
+  // Serial.print(F("Driver Ver:  "));
+  // Serial.println(sensor.version);
+  // Serial.print(F("Unique ID:   "));
+  // Serial.println(sensor.sensor_id);
+  // Serial.print(F("Max Value:   "));
+  // Serial.print(sensor.max_value);
+  // Serial.println(F("°C"));
+  // Serial.print(F("Min Value:   "));
+  // Serial.print(sensor.min_value);
+  // Serial.println(F("°C"));
+  // Serial.print(F("Resolution:  "));
+  // Serial.print(sensor.resolution);
+  // Serial.println(F("°C"));
+  // Serial.println(F("------------------------------------"));
+  // // Print humidity sensor details.
+  // dht.humidity().getSensor(&sensor);
+  // Serial.println(F("Humidity Sensor"));
+  // Serial.print(F("Sensor Type: "));
+  // Serial.println(sensor.name);
+  // Serial.print(F("Driver Ver:  "));
+  // Serial.println(sensor.version);
+  // Serial.print(F("Unique ID:   "));
+  // Serial.println(sensor.sensor_id);
+  // Serial.print(F("Max Value:   "));
+  // Serial.print(sensor.max_value);
+  // Serial.println(F("%"));
+  // Serial.print(F("Min Value:   "));
+  // Serial.print(sensor.min_value);
+  // Serial.println(F("%"));
+  // Serial.print(F("Resolution:  "));
+  // Serial.print(sensor.resolution);
+  // Serial.println(F("%"));
+  // Serial.println(F("------------------------------------"));
 
-  if (!sensor0.begin()) {
-    Serial.println("Cannot connect to TMP102 0.");
-    Serial.println("Is the board connected? Is the device ID correct?");
-    // while (1)
-    //   ;
-  }
+  // Set delay between sensor readings based on sensor details.
 
-  if (!sensor1.begin(0x4A, Wire)) {
-    Serial.println("Cannot connect to TMP102 1.");
-    Serial.println("Is the board connected? Is the device ID correct?");
-    // while (1)
-    //   ;
-  }
+  //   Wire.begin();  // Join I2C Bus
 
-  if (!sensor2.begin(0x4B, Wire)) {
-    Serial.println("Cannot connect to TMP102 2.");
-    Serial.println("Is the board connected? Is the device ID correct?");
-    // while (1)
-    //   ;
-  }
+  //   pinMode(ALERT_PIN, INPUT);  // Declare alertPin as an input
 
-  Serial.println("Connected to TMP102!");
-  delay(100);
-  // sensor0.setConversionRate(0);
-  // sensor0.setHighTempC(85.0);  // set T_HIGH
-  // sensor0.setLowTempC(84.0);
+  //   if (!sensor0.begin()) {
+  //     Serial.println("Cannot connect to TMP102 0.");
+  //     Serial.println("Is the board connected? Is the device ID correct?");
+  //     // while (1)
+  //     //   ;
+  //   }
+
+  //   if (!sensor1.begin(0x4A, Wire)) {
+  //     Serial.println("Cannot connect to TMP102 1.");
+  //     Serial.println("Is the board connected? Is the device ID correct?");
+  //     // while (1)
+  //     //   ;
+  //   }
+
+  //   if (!sensor2.begin(0x4B, Wire)) {
+  //     Serial.println("Cannot connect to TMP102 2.");
+  //     Serial.println("Is the board connected? Is the device ID correct?");
+  //     // while (1)
+  //     //   ;
+  //   }
+
+  //   Serial.println("Connected to TMP102!");
+  //   delay(100);
+  //   // sensor0.setConversionRate(0);
+  //   // sensor0.setHighTempC(85.0);  // set T_HIGH
+  //   // sensor0.setLowTempC(84.0);
 }
 
 void temperature_sensor_reading() {
-  // TMP102
+  // Delay between measurements.
+  // delay(delayMS);
+  // Get temperature event and print its value.
+  sensors_event_t event;
+  dhttop.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+  } else {
+    Serial.print(F("Top Temperature: "));
+    Serial.print(event.temperature);
+    Serial.println(F("°C"));
+  }
+  // Get humidity event and print its value.
+  dhttop.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+  } else {
+    Serial.print(F("Top Humidity: "));
+    Serial.print(event.relative_humidity);
+    Serial.println(F("%"));
+  }
 
-  float temperature;
-  boolean alertPinState, alertRegisterState;
+  dhtbottom.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+  } else {
+    Serial.print(F("Bottom Temperature: "));
+    Serial.print(event.temperature);
+    Serial.println(F("°C"));
+  }
+  // Get humidity event and print its value.
+  dhtbottom.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+  } else {
+    Serial.print(F("Bottom Humidity: "));
+    Serial.print(event.relative_humidity);
+    Serial.println(F("%"));
+  }
 
-  // Turn sensor on to start temperature measurement.
-  // Current consumtion typically ~10uA.
-  sensor0.wakeup();
+  // // TMP102
 
-  // read temperature data
-  temperature = sensor0.readTempC();
+  // float temperature;
+  // boolean alertPinState, alertRegisterState;
+
+  // // Turn sensor on to start temperature measurement.
+  // // Current consumtion typically ~10uA.
+  // sensor0.wakeup();
+
+  // // read temperature data
   // temperature = sensor0.readTempC();
+  // // temperature = sensor0.readTempC();
 
-  // Check for Alert
-  alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
-  alertRegisterState = sensor0.alert();    // read the Alert from register
+  // // Check for Alert
+  // alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
+  // alertRegisterState = sensor0.alert();    // read the Alert from register
 
-  // Place sensor in sleep mode to save power.
-  // Current consumtion typically <0.5uA.
-  sensor0.sleep();
+  // // Place sensor in sleep mode to save power.
+  // // Current consumtion typically <0.5uA.
+  // sensor0.sleep();
 
-  // Print temperature and alarm state
-  Serial.print("Temperature 0: ");
-  Serial.println(temperature);
+  // // Print temperature and alarm state
+  // Serial.print("Temperature 0: ");
+  // Serial.println(temperature);
 
-  sensor1.wakeup();
+  // sensor1.wakeup();
 
-  // read temperature data
-  temperature = sensor1.readTempC();
-  // temperature = sensor0.readTempC();
+  // // read temperature data
+  // temperature = sensor1.readTempC();
+  // // temperature = sensor0.readTempC();
 
-  // Check for Alert
-  alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
-  alertRegisterState = sensor1.alert();    // read the Alert from register
+  // // Check for Alert
+  // alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
+  // alertRegisterState = sensor1.alert();    // read the Alert from register
 
-  // Place sensor in sleep mode to save power.
-  // Current consumtion typically <0.5uA.
-  sensor1.sleep();
+  // // Place sensor in sleep mode to save power.
+  // // Current consumtion typically <0.5uA.
+  // sensor1.sleep();
 
-  // Print temperature and alarm state
-  Serial.print("Temperature 1: ");
-  Serial.println(temperature);
+  // // Print temperature and alarm state
+  // Serial.print("Temperature 1: ");
+  // Serial.println(temperature);
 
-  sensor2.wakeup();
+  // sensor2.wakeup();
 
-  // read temperature data
-  temperature = sensor2.readTempC();
-  // temperature = sensor0.readTempC();
+  // // read temperature data
+  // temperature = sensor2.readTempC();
+  // // temperature = sensor0.readTempC();
 
-  // Check for Alert
-  alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
-  alertRegisterState = sensor2.alert();    // read the Alert from register
+  // // Check for Alert
+  // alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
+  // alertRegisterState = sensor2.alert();    // read the Alert from register
 
-  // Place sensor in sleep mode to save power.
-  // Current consumtion typically <0.5uA.
-  sensor2.sleep();
+  // // Place sensor in sleep mode to save power.
+  // // Current consumtion typically <0.5uA.
+  // sensor2.sleep();
 
-  // Print temperature and alarm state
-  Serial.print("Temperature 2: ");
-  Serial.println(temperature);
+  // // Print temperature and alarm state
+  // Serial.print("Temperature 2: ");
+  // Serial.println(temperature);
 
   //
 }
