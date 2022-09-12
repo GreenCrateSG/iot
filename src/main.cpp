@@ -1,28 +1,5 @@
-#include <Adafruit_Sensor.h>
-#include <Arduino.h>
-#include <DHT.h>
-#include <DHT_U.h>
-#include <Digital_Light_TSL2561.h>
-#include <Ethernet.h>
-#include <PubSubClient.h>
-#include <SPI.h>
-#include <Wire.h>  // Used to establied serial communication on the I2C bus
-#include <arduino_sercret.h>
+#include "main.h"
 
-/** Functions **/
-
-void temperature_sensor_init();
-void temperature_sensor_reading();
-void lux_sensor_init();
-
-/****/
-
-/**  Ethernet  **/
-
-#define W5200_nSCS 10
-#define W5200_nRST 8
-#define W5200_PWDN 9
-#define W5200_nINT 3  // unused
 
 void DF_W5200_Init(void) {
   pinMode(W5200_nSCS, OUTPUT);
@@ -49,11 +26,20 @@ void DF_W5200_Init(void) {
 
 /****/
 
+/** TSL2561 **/
+
+Adafruit_TSL2561_Unified tsltop =
+    Adafruit_TSL2561_Unified(TSL2561_ADDR_LOW, 12345);
+Adafruit_TSL2561_Unified tslbottom =
+    Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 12345);
+
+/****/
+
 /** DHT11 **/
 
-#define DHTPINTOP 2             // Digital pin connected to the DHT sensor
-#define DHTPINBOTTOM 3             // Digital pin connected to the DHT sensor
-#define DHTTYPE    DHT11     // DHT 11
+#define DHTPINTOP 2     // Digital pin connected to the DHT sensor
+#define DHTPINBOTTOM 3  // Digital pin connected to the DHT sensor
+#define DHTTYPE DHT11   // DHT 11
 DHT_Unified dhttop(DHTPINTOP, DHTTYPE);
 DHT_Unified dhtbottom(DHTPINBOTTOM, DHTTYPE);
 
@@ -78,6 +64,18 @@ const char* mqttPassword = MQTTPASSWORD;
 
 unsigned long lastMillis = 0;
 
+
+
+void send_float_to_broker(const char* topic, String payload, float _v, int placement)
+{
+  String payload_data;
+  char packet[10];
+
+  payload_data = String(_v, placement);
+  payload_data.toCharArray(packet, payload_data.length() + 1);
+  client.publish(topic, packet);
+}
+
 void connect() {
   Serial.print("connecting...");
   while (!client.connect("arduino", mqttUser, mqttPassword)) {
@@ -87,12 +85,19 @@ void connect() {
 
   Serial.println("\nconnected!");
 
-  client.subscribe("/hello");
+  // TODO: ALL TOPIC
+  client.subscribe(TOPIC TOP TEMPERATURE);
+  client.subscribe(TOPIC TOP HUMIDITY);
+  client.subscribe(TOPIC TOP LUX);
   // client.unsubscribe("/hello");
+  client.subscribe(TOPIC BOTTOM TEMPERATURE);
+  client.subscribe(TOPIC BOTTOM HUMIDITY);
+  client.subscribe(TOPIC BOTTOM LUX);
 }
 
 void messageReceived(String& topic, String& payload) {
   Serial.println("incoming: " + topic + " - " + payload);
+
 
   // Note: Do not use the client in the callback to publish, subscribe or
   // unsubscribe as it may cause deadlocks when other things arrive while
@@ -102,18 +107,19 @@ void messageReceived(String& topic, String& payload) {
 
 void setup() {
   // put your setup code here, to run once:
-  // DF_W5200_Init();  // Init Ethernet
+
+  DF_W5200_Init();  // Init Ethernet
   Serial.begin(9600);
 
-  // client.setServer(mqtt_server, 1883);
-  // client.setCallback(callback);
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
 
-  // Ethernet.begin(mac, ip);
-  // delay(1500);
-  // Serial.print("server is at : ");
-  // Serial.println(Ethernet.localIP());
+  Ethernet.begin(mac, ip);
+  delay(1500);
+  Serial.print("server is at : ");
+  Serial.println(Ethernet.localIP());
 
-  // connect();
+  connect();
 
   temperature_sensor_init();
   lux_sensor_init();
@@ -130,25 +136,77 @@ void loop() {
   // publish a message roughly every second.
   if (millis() - lastMillis > 1000) {
     lastMillis = millis();
-    // client.publish("/hello", "world.");
+    // client.publish(TOPIC, TOP TEMPERATURE);
 
     temperature_sensor_reading();
 
     // Serial.print("The Light value is: ");
     // Serial.println(TSL2561.readVisibleLux());
+    lux_sensor_get_reading();
     delay(1000);
   }
 }
 
-
-
 void lux_sensor_init() {
   Wire.begin();
-  TSL2561.init();
+
+  if (!tsltop.begin()) {
+    /* There was a problem detecting the TSL2561 ... check your connections */
+    Serial.print(
+        "Ooops, no TSL2561 TOP detected ... Check your wiring or I2C ADDR!");
+    // while (1);
+  }
+
+  if (!tslbottom.begin()) {
+    /* There was a problem detecting the TSL2561 ... check your connections */
+    Serial.print(
+        "Ooops, no TSL2561 BOTTOM detected ... Check your wiring or I2C ADDR!");
+    // while (1);
+  }
+
+  tslbottom.enableAutoRange(
+      true); /* Auto-gain ... switches automatically between 1x and 16x */
+
+  tslbottom.setIntegrationTime(
+      TSL2561_INTEGRATIONTIME_402MS); /* 16-bit data but
+// slowest conversions */
+
+  tsltop.enableAutoRange(
+      true); /* Auto-gain ... switches automatically between 1x and 16x */
+
+  tsltop.setIntegrationTime(TSL2561_INTEGRATIONTIME_402MS);
+}
+
+void lux_sensor_get_reading() {
+  sensors_event_t event;
+  tslbottom.getEvent(&event);
+
+  /* Display the results (light is measured in lux) */
+  if (event.light) {
+    // Serial.print(event.light);
+    // Serial.println(" lux");
+    send_float_to_broker(TOPIC BOTTOM LUX, "", event.light, 3);
+  } else {
+    /* If event.light = 0 lux the sensor is probably saturated
+       and no reliable data could be generated! */
+    Serial.println("Sensor overload [bottom]");
+  }
+
+  tsltop.getEvent(&event);
+
+  /* Display the results (light is measured in lux) */
+  if (event.light) {
+    // Serial.print(event.light);
+    // Serial.println(" lux");
+    send_float_to_broker(TOPIC TOP LUX, "", event.light, 3);
+  } else {
+    /* If event.light = 0 lux the sensor is probably saturated
+       and no reliable data could be generated! */
+    Serial.println("Sensor overload [top]");
+  }
 }
 
 void temperature_sensor_init() {
-
   dhttop.begin();
   dhtbottom.begin();
   // Serial.println(F("DHTxx Unified Sensor Example"));
@@ -236,36 +294,44 @@ void temperature_sensor_reading() {
   if (isnan(event.temperature)) {
     Serial.println(F("Error reading temperature!"));
   } else {
-    Serial.print(F("Top Temperature: "));
-    Serial.print(event.temperature);
-    Serial.println(F("°C"));
+    // Serial.print(F("Top Temperature: "));
+    // Serial.print(event.temperature);
+    // Serial.println(F("°C"));
+    // payload_data = String(event.temperature, 4);
+    // payload_data.toCharArray(packet, payload_data.length() + 1);
+    // client.publish(TOPIC TOP TEMPERATURE, packet);
+    send_float_to_broker(TOPIC TOP TEMPERATURE, "", event.temperature, 3);
   }
   // Get humidity event and print its value.
   dhttop.humidity().getEvent(&event);
   if (isnan(event.relative_humidity)) {
     Serial.println(F("Error reading humidity!"));
   } else {
-    Serial.print(F("Top Humidity: "));
-    Serial.print(event.relative_humidity);
-    Serial.println(F("%"));
+    // Serial.print(F("Top Humidity: "));
+    // Serial.print(event.relative_humidity);
+    // Serial.println(F("%"));
+    send_float_to_broker(TOPIC TOP HUMIDITY, "", event.relative_humidity, 3);
   }
 
   dhtbottom.temperature().getEvent(&event);
   if (isnan(event.temperature)) {
     Serial.println(F("Error reading temperature!"));
   } else {
-    Serial.print(F("Bottom Temperature: "));
-    Serial.print(event.temperature);
-    Serial.println(F("°C"));
+    // Serial.print(F("Bottom Temperature: "));
+    // Serial.print(event.temperature);
+    // Serial.println(F("°C"));
+
+    send_float_to_broker(TOPIC BOTTOM TEMPERATURE, "", event.temperature, 3);
   }
   // Get humidity event and print its value.
   dhtbottom.humidity().getEvent(&event);
   if (isnan(event.relative_humidity)) {
     Serial.println(F("Error reading humidity!"));
   } else {
-    Serial.print(F("Bottom Humidity: "));
-    Serial.print(event.relative_humidity);
-    Serial.println(F("%"));
+    // Serial.print(F("Bottom Humidity: "));
+    // Serial.print(event.relative_humidity);
+    // Serial.println(F("%"));
+    send_float_to_broker(TOPIC BOTTOM HUMIDITY, "", event.relative_humidity, 3);
   }
 
   // // TMP102
