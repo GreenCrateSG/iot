@@ -18,5 +18,7 @@ void temperature_sensor_init();
 void temperature_sensor_reading();
 void lux_sensor_init();
 void lux_sensor_get_reading();
+void light_init();
+void motor_init();
 
 /****/

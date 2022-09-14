@@ -108,9 +108,12 @@ void messageReceived(String& topic, String& payload) {
 void setup() {
   // put your setup code here, to run once:
 
-  DF_W5200_Init();  // Init Ethernet
   Serial.begin(9600);
 
+  light_init();
+  motor_init();
+
+  DF_W5200_Init();  // Init Ethernet
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
@@ -123,27 +126,26 @@ void setup() {
 
   temperature_sensor_init();
   lux_sensor_init();
+
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  // client.loop();
+  client.loop();
 
-  // if (!client.connected()) {
-  //   connect();
-  // }
+  if (!client.connected()) {
+    connect();
+  }
 
   // publish a message roughly every second.
   if (millis() - lastMillis > 1000) {
     lastMillis = millis();
-    // client.publish(TOPIC, TOP TEMPERATURE);
 
     temperature_sensor_reading();
 
-    // Serial.print("The Light value is: ");
-    // Serial.println(TSL2561.readVisibleLux());
     lux_sensor_get_reading();
     delay(1000);
+
   }
 }
 
@@ -396,4 +398,35 @@ void temperature_sensor_reading() {
   // Serial.println(temperature);
 
   //
+
+}
+
+void light_init() {
+  // Serial.println("\nStart light config");
+
+  pinMode(LIGHT_ONE_PIN, OUTPUT);
+  pinMode(LIGHT_TWO_PIN, OUTPUT);
+  pinMode(LIGHT_THREE_PIN, OUTPUT);
+  pinMode(LIGHT_FOUR_PIN, OUTPUT);
+
+  digitalWrite(LIGHT_ONE_PIN, LOW);
+  digitalWrite(LIGHT_TWO_PIN, LOW);
+  digitalWrite(LIGHT_THREE_PIN, LOW);
+  digitalWrite(LIGHT_FOUR_PIN, LOW);
+
+  // Serial.println("End light config");
+}
+
+void motor_init()
+{
+  pinMode(MOTOR_ONE_CW_PIN, OUTPUT);
+  pinMode(MOTOR_ONE_ACW_PIN, OUTPUT);
+  pinMode(MOTOR_TWO_CW_PIN, OUTPUT);
+  pinMode(MOTOR_TWO_ACW_PIN, OUTPUT);
+
+  digitalWrite(MOTOR_ONE_CW_PIN, LOW);
+  digitalWrite(MOTOR_ONE_ACW_PIN, LOW);
+
+  digitalWrite(MOTOR_TWO_CW_PIN, LOW);
+  digitalWrite(MOTOR_TWO_ACW_PIN, LOW);
 }
