@@ -1,5 +1,5 @@
 #include "main.h"
-
+#include "routine.h"
 
 void DF_W5200_Init(void) {
   pinMode(W5200_nSCS, OUTPUT);
@@ -144,6 +144,7 @@ void loop() {
     temperature_sensor_reading();
 
     lux_sensor_get_reading();
+
     delay(1000);
 
   }
@@ -188,6 +189,7 @@ void lux_sensor_get_reading() {
     // Serial.print(event.light);
     // Serial.println(" lux");
     send_float_to_broker(TOPIC BOTTOM LUX, "", event.light, 3);
+
   } else {
     /* If event.light = 0 lux the sensor is probably saturated
        and no reliable data could be generated! */
@@ -409,6 +411,8 @@ void light_init() {
   pinMode(LIGHT_THREE_PIN, OUTPUT);
   pinMode(LIGHT_FOUR_PIN, OUTPUT);
 
+
+  // Sure all pins are set ON
   digitalWrite(LIGHT_ONE_PIN, LOW);
   digitalWrite(LIGHT_TWO_PIN, LOW);
   digitalWrite(LIGHT_THREE_PIN, LOW);
@@ -419,14 +423,14 @@ void light_init() {
 
 void motor_init()
 {
-  pinMode(MOTOR_ONE_CW_PIN, OUTPUT);
-  pinMode(MOTOR_ONE_ACW_PIN, OUTPUT);
-  pinMode(MOTOR_TWO_CW_PIN, OUTPUT);
-  pinMode(MOTOR_TWO_ACW_PIN, OUTPUT);
+  pinMode(MOTOR_A_CW_PIN, OUTPUT);
+  pinMode(MOTOR_A_ACW_PIN, OUTPUT);
+  pinMode(MOTOR_B_CW_PIN, OUTPUT);
+  pinMode(MOTOR_B_ACW_PIN, OUTPUT);
 
-  digitalWrite(MOTOR_ONE_CW_PIN, LOW);
-  digitalWrite(MOTOR_ONE_ACW_PIN, LOW);
+  digitalWrite(MOTOR_A_CW_PIN, LOW);
+  digitalWrite(MOTOR_A_ACW_PIN, LOW);
 
-  digitalWrite(MOTOR_TWO_CW_PIN, LOW);
-  digitalWrite(MOTOR_TWO_ACW_PIN, LOW);
+  digitalWrite(MOTOR_B_CW_PIN, LOW);
+  digitalWrite(MOTOR_B_ACW_PIN, LOW);
 }

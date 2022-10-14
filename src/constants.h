@@ -1,3 +1,11 @@
+/** MUST **/
+
+#define EC_MIN 100
+#define EC_MAX 150
+#define LUX_SWITCH 100
+
+/*****/
+
 /**  Ethernet  **/
 
 #define W5200_nSCS 10
@@ -37,9 +45,11 @@
 
 /** PUMP PIN **/
 
-#define MOTOR_ONE_CW_PIN    30
-#define MOTOR_ONE_ACW_PIN   31
-#define MOTOR_TWO_CW_PIN    32
-#define MOTOR_TWO_ACW_PIN   33
+#define MOTOR_A_CW_PIN    30
+#define MOTOR_A_ACW_PIN   31
+#define MOTOR_B_CW_PIN    32
+#define MOTOR_B_ACW_PIN   33
+#define MOTOR_CLEAN_CW_PIN 34
+#define MOTOR_CLEAN_ACW_PIN 35
 
 /*****/
