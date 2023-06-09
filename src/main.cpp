@@ -25,16 +25,6 @@ void DF_W5200_Init(void) {
 
 /****/
 
-/**  TMP102  **/
-
-// #define ALERT_PIN A3
-
-// TMP102 sensor0;
-// TMP102 sensor1;
-// TMP102 sensor2;
-
-/****/
-
 /** DHT11 **/
 
 #define DHTPINTOP 2             // Digital pin connected to the DHT sensor
@@ -86,33 +76,87 @@ void messageReceived(String& topic, String& payload) {
   // or push to a queue and handle it in the loop after calling `client.loop()`.
 }
 
+void scan_devices(){
+  byte error, address;
+  int nDevices;
+
+  Serial.println("Scanning...");
+
+  nDevices = 0;
+  for(address = 1; address < 127; address++ )
+  {
+    // The i2c_scanner uses the return value of
+    // the Write.endTransmisstion to see if
+    // a device did acknowledge to the address.
+    Wire.beginTransmission(address);
+    // Serial.println(address);
+    delay(10);
+    error = Wire.endTransmission();
+
+    if (error == 0)
+    {
+      Serial.print("I2C device found at address 0x");
+      if (address<16)
+        Serial.print("0");
+      Serial.print(address,HEX);
+      Serial.println("  !");
+
+      nDevices++;
+    }
+    else if (error==4)
+    {
+      Serial.print("Unknown error at address 0x");
+      if (address<16)
+        Serial.print("0");
+      Serial.println(address,HEX);
+    }
+  }
+  if (nDevices == 0)
+    Serial.println("No I2C devices found\n");
+  else
+    Serial.println("done\n");
+
+  // delay(1000);           // wait 5 seconds for next scan
+}
+
 void setup() {
+
   // put your setup code here, to run once:
-  DF_W5200_Init();  // Init Ethernet
+  // DF_W5200_Init();  // Init Ethernet
   Serial.begin(9600);
 
-  client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
+  Wire.begin(); // I2C
+  scan_devices();
 
-  Ethernet.begin(mac, ip);
-  delay(1500);
-  Serial.print("server is at : ");
-  Serial.println(Ethernet.localIP());
+  // client.setServer(mqtt_server, 1883);
+  // client.setCallback(callback);
 
-  connect();
+  // Ethernet.begin(mac, ip);
+  // delay(1500);
+  // Serial.print("server is at : ");
+  // Serial.println(Ethernet.localIP());
 
-  Wire.begin();
+  // connect();
 
-  temperature_sensor_init();
-  lux_sensor_init();
+  // temperature_sensor_init();
+  // lux_sensor_init();
+
+  Seq.reset();
+  Serial.println("Setup Completed!\n");
 }
 
 void loop() {
+  String cmd;                             //variable to hold commands we send to the kit
   // put your main code here, to run repeatedly:
-  client.loop();
+  // client.loop();
 
-  if (!client.connected()) {
-    connect();
+  // if (!client.connected()) {
+  //   connect();
+  // }
+
+  if (polling == true) {                 //if polling is turned on, run the sequencer
+    Seq.run();
+    // Seq.reset();
   }
 
   // publish a message roughly every second.
@@ -120,11 +164,11 @@ void loop() {
     lastMillis = millis();
     // client.publish("/hello", "world.");
 
-    temperature_sensor_reading();
+    // temperature_sensor_reading();
 
     // Serial.print("The Light value is: ");
     // Serial.println(TSL2561.readVisibleLux());
-    delay(1000);
+    // delay(1000);
   }
 }
 
@@ -142,76 +186,7 @@ void temperature_sensor_init() {
   // Print temperature sensor details.
   sensor_t sensor;
   dhttop.temperature().getSensor(&sensor);
-  // Serial.println(F("------------------------------------"));
-  // Serial.println(F("Temperature Sensor"));
-  // Serial.print(F("Sensor Type: "));
-  // Serial.println(sensor.name);
-  // Serial.print(F("Driver Ver:  "));
-  // Serial.println(sensor.version);
-  // Serial.print(F("Unique ID:   "));
-  // Serial.println(sensor.sensor_id);
-  // Serial.print(F("Max Value:   "));
-  // Serial.print(sensor.max_value);
-  // Serial.println(F("°C"));
-  // Serial.print(F("Min Value:   "));
-  // Serial.print(sensor.min_value);
-  // Serial.println(F("°C"));
-  // Serial.print(F("Resolution:  "));
-  // Serial.print(sensor.resolution);
-  // Serial.println(F("°C"));
-  // Serial.println(F("------------------------------------"));
-  // // Print humidity sensor details.
-  // dht.humidity().getSensor(&sensor);
-  // Serial.println(F("Humidity Sensor"));
-  // Serial.print(F("Sensor Type: "));
-  // Serial.println(sensor.name);
-  // Serial.print(F("Driver Ver:  "));
-  // Serial.println(sensor.version);
-  // Serial.print(F("Unique ID:   "));
-  // Serial.println(sensor.sensor_id);
-  // Serial.print(F("Max Value:   "));
-  // Serial.print(sensor.max_value);
-  // Serial.println(F("%"));
-  // Serial.print(F("Min Value:   "));
-  // Serial.print(sensor.min_value);
-  // Serial.println(F("%"));
-  // Serial.print(F("Resolution:  "));
-  // Serial.print(sensor.resolution);
-  // Serial.println(F("%"));
-  // Serial.println(F("------------------------------------"));
 
-  // Set delay between sensor readings based on sensor details.
-
-  //   Wire.begin();  // Join I2C Bus
-
-  //   pinMode(ALERT_PIN, INPUT);  // Declare alertPin as an input
-
-  //   if (!sensor0.begin()) {
-  //     Serial.println("Cannot connect to TMP102 0.");
-  //     Serial.println("Is the board connected? Is the device ID correct?");
-  //     // while (1)
-  //     //   ;
-  //   }
-
-  //   if (!sensor1.begin(0x4A, Wire)) {
-  //     Serial.println("Cannot connect to TMP102 1.");
-  //     Serial.println("Is the board connected? Is the device ID correct?");
-  //     // while (1)
-  //     //   ;
-  //   }
-
-  //   if (!sensor2.begin(0x4B, Wire)) {
-  //     Serial.println("Cannot connect to TMP102 2.");
-  //     Serial.println("Is the board connected? Is the device ID correct?");
-  //     // while (1)
-  //     //   ;
-  //   }
-
-  //   Serial.println("Connected to TMP102!");
-  //   delay(100);
-  //   // sensor0.setConversionRate(0);
-  //   // sensor0.setHighTempC(85.0);  // set T_HIGH
-  //   // sensor0.setLowTempC(84.0);
 }
 
 void temperature_sensor_reading() {
@@ -254,67 +229,46 @@ void temperature_sensor_reading() {
     Serial.print(event.relative_humidity);
     Serial.println(F("%"));
   }
+}
 
-  // // TMP102
+void step1() {
+  //send a read command. we use this command instead of RTD.send_cmd("R");
+  //to let the library know to parse the reading
+  RTD.send_read_cmd();
+}
 
-  // float temperature;
-  // boolean alertPinState, alertRegisterState;
+void step2() {
+  receive_and_print_reading(RTD);             //get the reading from the RTD circuit
 
-  // // Turn sensor on to start temperature measurement.
-  // // Current consumtion typically ~10uA.
-  // sensor0.wakeup();
+  if ((RTD.get_error() == Ezo_board::SUCCESS) && (RTD.get_last_received_reading() > -1000.0)) { //if the temperature reading has been received and it is valid
+    PH.send_cmd_with_num("T,", RTD.get_last_received_reading());
+    EC.send_cmd_with_num("T,", RTD.get_last_received_reading());
 
-  // // read temperature data
-  // temperature = sensor0.readTempC();
-  // // temperature = sensor0.readTempC();
+  } else {                                                                                      //if the temperature reading is invalid
+    PH.send_cmd_with_num("T,", 25.0);                                                           //send default temp = 25 deg C to PH sensor
+    EC.send_cmd_with_num("T,", 25.0);
+  }
 
-  // // Check for Alert
-  // alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
-  // alertRegisterState = sensor0.alert();    // read the Alert from register
+  Serial.print(" ");
+}
 
-  // // Place sensor in sleep mode to save power.
-  // // Current consumtion typically <0.5uA.
-  // sensor0.sleep();
+void step3() {
+  //send a read command. we use this command instead of PH.send_cmd("R");
+  //to let the library know to parse the reading
+  PH.send_read_cmd();
+  EC.send_read_cmd();
+}
 
-  // // Print temperature and alarm state
-  // Serial.print("Temperature 0: ");
-  // Serial.println(temperature);
+void step4() {
+  receive_and_print_reading(PH);             //get the reading from the PH circuit
+  if (PH.get_error() == Ezo_board::SUCCESS) {                                           //if the PH reading was successful (back in step 1)
 
-  // sensor1.wakeup();
+  }
+  Serial.print("  ");
+  receive_and_print_reading(EC);             //get the reading from the EC circuit
+  if (EC.get_error() == Ezo_board::SUCCESS) {                                           //if the EC reading was successful (back in step 1)
 
-  // // read temperature data
-  // temperature = sensor1.readTempC();
-  // // temperature = sensor0.readTempC();
+  }
 
-  // // Check for Alert
-  // alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
-  // alertRegisterState = sensor1.alert();    // read the Alert from register
-
-  // // Place sensor in sleep mode to save power.
-  // // Current consumtion typically <0.5uA.
-  // sensor1.sleep();
-
-  // // Print temperature and alarm state
-  // Serial.print("Temperature 1: ");
-  // Serial.println(temperature);
-
-  // sensor2.wakeup();
-
-  // // read temperature data
-  // temperature = sensor2.readTempC();
-  // // temperature = sensor0.readTempC();
-
-  // // Check for Alert
-  // alertPinState = digitalRead(ALERT_PIN);  // read the Alert from pin
-  // alertRegisterState = sensor2.alert();    // read the Alert from register
-
-  // // Place sensor in sleep mode to save power.
-  // // Current consumtion typically <0.5uA.
-  // sensor2.sleep();
-
-  // // Print temperature and alarm state
-  // Serial.print("Temperature 2: ");
-  // Serial.println(temperature);
-
-  //
+  Serial.println();
 }
