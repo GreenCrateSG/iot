@@ -1,21 +1,7 @@
-#include <Adafruit_Sensor.h>
+
 #include <Arduino.h>
-#include <DHT.h>
-#include <DHT_U.h>
-#include <Digital_Light_TSL2561.h>
-#include <Ethernet.h>
-#include <PubSubClient.h>
-#include <SPI.h>
-#include <Wire.h>  // Used to establied serial communication on the I2C bus
-#include <arduino_sercret.h>
 
-/** Functions **/
-
-void temperature_sensor_init();
-void temperature_sensor_reading();
-void lux_sensor_init();
-
-/****/
+#include "main.h"
 
 /**  Ethernet  **/
 
@@ -102,18 +88,20 @@ void messageReceived(String& topic, String& payload) {
 
 void setup() {
   // put your setup code here, to run once:
-  // DF_W5200_Init();  // Init Ethernet
+  DF_W5200_Init();  // Init Ethernet
   Serial.begin(9600);
 
-  // client.setServer(mqtt_server, 1883);
-  // client.setCallback(callback);
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
 
-  // Ethernet.begin(mac, ip);
-  // delay(1500);
-  // Serial.print("server is at : ");
-  // Serial.println(Ethernet.localIP());
+  Ethernet.begin(mac, ip);
+  delay(1500);
+  Serial.print("server is at : ");
+  Serial.println(Ethernet.localIP());
 
-  // connect();
+  connect();
+
+  Wire.begin();
 
   temperature_sensor_init();
   lux_sensor_init();
@@ -121,11 +109,11 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  // client.loop();
+  client.loop();
 
-  // if (!client.connected()) {
-  //   connect();
-  // }
+  if (!client.connected()) {
+    connect();
+  }
 
   // publish a message roughly every second.
   if (millis() - lastMillis > 1000) {
@@ -143,7 +131,6 @@ void loop() {
 
 
 void lux_sensor_init() {
-  Wire.begin();
   TSL2561.init();
 }
 
