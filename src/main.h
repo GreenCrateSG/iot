@@ -2,7 +2,7 @@
 
 #include <DHT.h>
 #include <DHT_U.h>
-#include <Digital_Light_TSL2561.h>
+#include "TSL2561.h"
 #include <Ethernet.h>
 #include <PubSubClient.h>
 #include <SPI.h>
@@ -42,6 +42,7 @@ const uint8_t device_list_len = sizeof(device_list) / sizeof(device_list[0]);
 
 
 //------For version 1.5 use these enable pins for each circuit------
+// #TODO: Update pin
 const int EN_PH = 12;
 const int EN_EC = 27;
 // const int EN_RTD = 15;
