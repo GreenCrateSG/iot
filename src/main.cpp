@@ -25,16 +25,6 @@ void DF_W5200_Init(void) {
 
 /****/
 
-/** DHT11 **/
-
-#define DHTPINTOP 6     // Digital pin connected to the DHT sensor
-#define DHTPINBOTTOM 7  // Digital pin connected to the DHT sensor
-#define DHTTYPE DHT11   // DHT 11
-DHT_Unified dhttop(DHTPINTOP, DHTTYPE);
-DHT_Unified dhtbottom(DHTPINBOTTOM, DHTTYPE);
-
-/****/
-
 /** TSL2561 **/
 
 TSL2561 tslOne(TSL2561_ADDR_LOW);
@@ -44,8 +34,8 @@ TSL2561 tslTwo(TSL2561_ADDR_FLOAT);
 
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 // byte ip[] = {192, 168, 8, 116};  // <- change to match your network
-IPAddress ip(192, 168, 8, 116);
-IPAddress server(192, 168, 8, 115);
+IPAddress ip(192, 168, 1, 14);
+IPAddress server(192, 168, 1, 16);
 
 void callback(char* topic, byte* payload, unsigned int length) {
   // handle message arrived
@@ -70,7 +60,7 @@ void connect() {
 
   Serial.println("\nconnected!");
 
-  client.subscribe("/hello");
+  // client.subscribe("/arduino");
   // client.unsubscribe("/hello");
 }
 
@@ -124,7 +114,7 @@ void scan_devices() {
 
 void setup() {
   // put your setup code here, to run once:
-  // DF_W5200_Init();  // Init Ethernet
+  DF_W5200_Init();  // Init Ethernet
   Serial.begin(9600);
 
   Wire.begin();  // I2C
@@ -196,7 +186,7 @@ void loop() {
   // digitalWrite(43, OUTPUT);
   // digitalWrite(45, OUTPUT);
 
-  String cmd;  // variable to hold commands we send to the kit
+  // String cmd;  // variable to hold commands we send to the kit
   // put your main code here, to run repeatedly:
   client.loop();
 
@@ -204,40 +194,33 @@ void loop() {
     connect();
   }
 
-  // if (polling == true) {                 //if polling is turned on, run the sequencer
-  //   Seq.run();
-  //   // Seq.reset();
-  // }
+  if (polling == true) {  // if polling is turned on, run the sequencer
+    Seq.run();
+    // Seq.reset();
+  }
 
   // publish a message roughly every second.
-  if (millis() - lastMillis > 1000) {
-    lastMillis = millis();
-    // client.publish("/hello", "world.");
+  // if (millis() - lastMillis > 5000) {
+  //   lastMillis = millis();
 
-    temperature_sensor_reading();
+  //   temperature_sensor_reading();
+  //   lux_sensor_reading();
 
-    // Serial.print("The Light value is: ");
-    // Serial.println(tslOne.getLuminosity(TSL2561_VISIBLE));
-    // Serial.println(tslTwo.getLuminosity(TSL2561_VISIBLE));
-    // delay(1000);
-  }
+  //   // delay(1000);
+  // }
 }
 
 void lux_sensor_init() {
   if (tslOne.begin()) {
     Serial.println("Found sensor");
   } else {
-    Serial.println("No sensor?");
-    while (1)
-      ;
+    Serial.println("No sensor");
   }
 
   if (tslTwo.begin()) {
     Serial.println("Found sensor");
   } else {
-    Serial.println("No sensor?");
-    while (1)
-      ;
+    Serial.println("No sensor");
   }
 
   tslOne.setGain(TSL2561_GAIN_16X);
@@ -256,17 +239,27 @@ void temperature_sensor_init() {
   dhttop.temperature().getSensor(&sensor);
 }
 
+void lux_sensor_reading() {
+  // Serial.print("The Light value is: ");
+  Serial.println(tslOne.getLuminosity(TSL2561_VISIBLE));
+  client.publish(LUXTOP_TOPIC, String(tslOne.getLuminosity(TSL2561_VISIBLE)).c_str());
+  Serial.println(tslTwo.getLuminosity(TSL2561_VISIBLE));
+  client.publish(LUXBOT_TOPIC, String(tslTwo.getLuminosity(TSL2561_VISIBLE)).c_str());
+}
+
 void temperature_sensor_reading() {
   // Delay between measurements.
   // delay(delayMS);
   // Get temperature event and print its value.
+  String str_buff;
   sensors_event_t event;
   dhttop.temperature().getEvent(&event);
   if (isnan(event.temperature)) {
-    Serial.println(F("Error reading temperature!"));
+    Serial.println(F("Top: Error reading temperature!"));
   } else {
     Serial.print(F("Top Temperature: "));
     Serial.print(event.temperature);
+    client.publish(DHTTOP_TEMP_TOPIC, String(event.temperature).c_str());
     Serial.println(F("°C"));
   }
   // Get humidity event and print its value.
@@ -276,15 +269,17 @@ void temperature_sensor_reading() {
   } else {
     Serial.print(F("Top Humidity: "));
     Serial.print(event.relative_humidity);
+    client.publish(DHTTOP_HUM_TOPIC, String(event.relative_humidity).c_str());
     Serial.println(F("%"));
   }
 
   dhtbottom.temperature().getEvent(&event);
   if (isnan(event.temperature)) {
-    Serial.println(F("Error reading temperature!"));
+    Serial.println(F("Bottom: Error reading temperature!"));
   } else {
     Serial.print(F("Bottom Temperature: "));
     Serial.print(event.temperature);
+    client.publish(DHTBOT_TEMP_TOPIC, String(event.temperature).c_str());
     Serial.println(F("°C"));
   }
   // Get humidity event and print its value.
@@ -294,6 +289,7 @@ void temperature_sensor_reading() {
   } else {
     Serial.print(F("Bottom Humidity: "));
     Serial.print(event.relative_humidity);
+    client.publish(DHTBOT_HUM_TOPIC, String(event.relative_humidity).c_str());
     Serial.println(F("%"));
   }
 }
@@ -302,12 +298,16 @@ void step1() {
   // send a read command. we use this command instead of RTD.send_cmd("R");
   // to let the library know to parse the reading
   RTD.send_read_cmd();
+
+  temperature_sensor_reading();
+  lux_sensor_reading();
 }
 
 void step2() {
   receive_and_print_reading(RTD);  // get the reading from the RTD circuit
 
   if ((RTD.get_error() == Ezo_board::SUCCESS) && (RTD.get_last_received_reading() > -1000.0)) {  // if the temperature reading has been received and it is valid
+    client.publish(TEMP_TOPIC, String(RTD.get_last_received_reading()).c_str());
     PH.send_cmd_with_num("T,", RTD.get_last_received_reading());
     EC.send_cmd_with_num("T,", RTD.get_last_received_reading());
 
@@ -329,10 +329,12 @@ void step3() {
 void step4() {
   receive_and_print_reading(PH);               // get the reading from the PH circuit
   if (PH.get_error() == Ezo_board::SUCCESS) {  // if the PH reading was successful (back in step 1)
+    client.publish(PH_TOPIC, String(PH.get_last_received_reading()).c_str());
   }
   Serial.print("  ");
   receive_and_print_reading(EC);               // get the reading from the EC circuit
   if (EC.get_error() == Ezo_board::SUCCESS) {  // if the EC reading was successful (back in step 1)
+    client.publish(EC_TOPIC, String(EC.get_last_received_reading()).c_str());
   }
 
   Serial.println();
