@@ -124,7 +124,7 @@ void setup() {
     Serial.println("Failed to find INA219 chip");
   }
 
-  client.setServer(mqtt_server, 1883);
+  client.setServer(mqtt_server, MQTT_PORT);
   client.setCallback(callback);
 
   Ethernet.begin(mac, ip);
