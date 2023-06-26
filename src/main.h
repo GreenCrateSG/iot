@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Adafruit_INA219.h>
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
@@ -23,6 +24,7 @@ void temperature_sensor_init();
 void temperature_sensor_reading();
 void lux_sensor_init();
 void lux_sensor_reading();
+void get_power();
 
 /****/
 
@@ -40,13 +42,46 @@ void lux_sensor_reading();
 #define EC_TOPIC "/ec"
 #define TEMP_TOPIC "/temp"
 
+#define POWER_TOPIC "/power"
+#define LOADVOLTAGE_TOPIC "/loadvoltage"
+#define CURRENT_TOPIC "/current"
 /****/
 
-/** DHT11 **/
+/** CONFIG **/
 
 #define DHTPINTOP 6     // Digital pin connected to the DHT sensor
 #define DHTPINBOTTOM 7  // Digital pin connected to the DHT sensor
-#define DHTTYPE DHT11   // DHT 11
+
+#define L1 2
+#define L2 3
+#define L3 4
+#define L4 5
+
+#define M1_IN1 14
+#define M1_IN2 15
+#define M2_IN1 16
+#define M2_IN2 17
+#define M3_IN1 31
+#define M3_IN2 33
+#define M4_IN1 35
+#define M4_IN2 37
+#define M5_IN1 39
+#define M5_IN2 41
+#define M6_IN1 43
+#define M6_IN2 45
+
+Adafruit_INA219 ina219;
+uint32_t total_sec = 0;
+float total_mA = 0.0;
+
+// #TODO: Update pin
+const int EN_PH = 25;
+const int EN_EC = 27;
+const int EN_RTD = 23;
+
+/** DHT11 **/
+
+#define DHTTYPE DHT11  // DHT 11
 DHT_Unified dhttop(DHTPINTOP, DHTTYPE);
 DHT_Unified dhtbottom(DHTPINBOTTOM, DHTTYPE);
 
@@ -67,16 +102,12 @@ Ezo_board* default_board = &device_list[0];  // used to store the board were tal
 const uint8_t device_list_len = sizeof(device_list) / sizeof(device_list[0]);
 
 //------For version 1.5 use these enable pins for each circuit------
-// #TODO: Update pin
-const int EN_PH = 12;
-const int EN_EC = 27;
-// const int EN_RTD = 15;
-// const int EN_AUX = 33;
+
 //------------------------------------------------------------------
 
 const unsigned long reading_delay = 1000;  // how long we wait to receive a response, in milliseconds
 
-unsigned int poll_delay = 10000;  // 2000 - (reading_delay * 2) - 300;  // how long to wait between polls after accounting for the times it takes to send readings
+unsigned long poll_delay = 10000;  // 2000 - (reading_delay * 2) - 300;  // how long to wait between polls after accounting for the times it takes to send readings
 
 bool polling = true;  // variable to determine whether or not were polling the circuits
 
