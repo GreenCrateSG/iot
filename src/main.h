@@ -1,13 +1,12 @@
 #pragma once
 
-#include <Adafruit_INA219.h>
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
 #include <Ethernet.h>
 #include <Ezo_i2c.h>       //include the EZO I2C library from https://github.com/Atlas-Scientific/Ezo_I2c_lib
 #include <Ezo_i2c_util.h>  //brings in common print statements
-#include <PubSubClient.h>
+#include <MQTT.h>
 #include <SPI.h>
 #include <Wire.h>        // Used to establied serial communication on the I2C bus
 #include <sequencer1.h>  //imports a 1 function sequencer
@@ -20,6 +19,7 @@
 
 /** Functions **/
 
+void gpio_init();
 void temperature_sensor_init();
 void temperature_sensor_reading();
 void lux_sensor_init();
@@ -69,10 +69,6 @@ void get_power();
 #define M5_IN2 41
 #define M6_IN1 43
 #define M6_IN2 45
-
-Adafruit_INA219 ina219;
-uint32_t total_sec = 0;
-float total_mA = 0.0;
 
 // #TODO: Update pin
 const int EN_PH = 25;
