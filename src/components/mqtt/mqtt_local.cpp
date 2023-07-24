@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-#include "../class/hydro.h"
+#include "callback.h"
 
 extern Hydro junction_box;
 
@@ -30,11 +30,13 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (String(topic).startsWith(TOPIC_CMND)) {
     // Extract the subtopic after the base topic
     String subtopic = String(topic).substring(strlen(TOPIC_CMND));
-
+    command_callback(subtopic.c_str(), junction_box);
   } else if (String(topic).startsWith(TOPIC_STAT)) {
     String subtopic = String(topic).substring(strlen(TOPIC_STAT));
+    status_callback(subtopic.c_str(), junction_box);
   } else if (String(topic).startsWith(TOPIC_TELE)) {
     String subtopic = String(topic).substring(strlen(TOPIC_TELE));
+    telemetry_callback(subtopic.c_str(), junction_box);
   }
 }
 
