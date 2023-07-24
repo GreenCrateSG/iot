@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#include "../debug/debug.h"
+
 /** CONFIG **/
 
 #define L1 2

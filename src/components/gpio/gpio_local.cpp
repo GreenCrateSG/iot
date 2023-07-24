@@ -28,23 +28,22 @@ void gpio_init() {
   pinMode(M6_IN1, OUTPUT);
   pinMode(M6_IN2, OUTPUT);
 
-  // gpio
   // light
   digitalWrite(L1, LOW);
-  digitalWrite(L2, LOW);
+  digitalWrite(L2, LOW);  // FIXME: ISSUE
   digitalWrite(L3, LOW);
   digitalWrite(L4, LOW);
 
   // m1
-  digitalWrite(M1_IN1, LOW);
+  digitalWrite(M1_IN1, LOW);  // TOP
   digitalWrite(M1_IN2, LOW);
   digitalWrite(M2_IN1, LOW);
   digitalWrite(M2_IN2, LOW);
 
   // m2
-  digitalWrite(M3_IN1, LOW);
+  digitalWrite(M3_IN1, LOW);  // RIGHT TOP
   digitalWrite(M3_IN2, LOW);
-  digitalWrite(M4_IN1, LOW);
+  digitalWrite(M4_IN1, LOW);  // RIGHT BOTTOM
   digitalWrite(M4_IN2, LOW);
 
   // m3
@@ -58,7 +57,7 @@ void scan_devices() {
   byte error, address;
   int nDevices;
 
-  Serial.println("[I2C]: Scanning...");
+  D_println("[I2C]: Scanning...");
 
   nDevices = 0;
   for (address = 1; address < 127; address++) {
@@ -66,29 +65,36 @@ void scan_devices() {
     // the Write.endTransmisstion to see if
     // a device did acknowledge to the address.
     Wire.beginTransmission(address);
-    // Serial.println(address);
+    // D_println(address);
     delay(10);
     error = Wire.endTransmission();
 
     if (error == 0) {
-      Serial.print("[I2C]: I2C device found at address 0x");
+      D_print("[I2C]: I2C device found at address 0x");
       if (address < 16)
-        Serial.print("0");
-      Serial.print(address, HEX);
-      Serial.println("  !");
+        D_print("0");
+      D_print(address, HEX);
+      D_println("  !");
 
       nDevices++;
     } else if (error == 4) {
-      Serial.print("[I2C]: Unknown error at address 0x");
+      D_print("[I2C]: Unknown error at address 0x");
       if (address < 16)
-        Serial.print("0");
-      Serial.println(address, HEX);
+        D_print("0");
+      D_println(address, HEX);
     }
   }
   if (nDevices == 0)
-    Serial.println("[I2C]: No I2C devices found\n");
+    D_println("[I2C]: No I2C devices found\n");
   else
-    Serial.println("[I2C]: done\n");
+    D_println("[I2C]: done\n");
 
   // delay(1000);           // wait 5 seconds for next scan
+}
+
+void light_control(uint8_t _pin, uint8_t _val) {
+  if (_pin == L1 || _pin == L2 || _pin == L3 || _pin == L4) {
+    digitalWrite(_pin, _val);
+  } else
+    D_println("[GPIO]: Invalid pin for light control");
 }

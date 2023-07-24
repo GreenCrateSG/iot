@@ -5,8 +5,14 @@
 #include <MQTT.h>
 
 #include "../../arduino_sercret.h"
+#include "../debug/debug.h"
 
 /** Topic **/
+
+// API
+#define TOPIC_CMND "cmnd"  // command
+#define TOPIC_STAT "stat"  // status
+#define TOPIC_TELE "tele"  // telemetry
 
 #define DHTTOP_TEMP_TOPIC "sensor/dhttop/temperature"
 #define DHTTOP_HUM_TOPIC "sensor/dhttop/humidity"

@@ -6,6 +6,9 @@
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 // byte ip[] = {192, 168, 8, 116};  // <- change to match your network
 IPAddress ip(192, 168, 8, 104);
+IPAddress dns(1, 1, 1, 1);
+
+extern bool eth_mqtt_connected;
 
 void DF_W5200_Init(void) {
   pinMode(W5200_nSCS, OUTPUT);
@@ -22,9 +25,15 @@ void DF_W5200_Init(void) {
 
 void ethernet_init() {
   DF_W5200_Init();
-  Ethernet.begin(mac, ip);
+  Ethernet.begin(mac, ip, dns);
+  // if (Ethernet.linkStatus() == Unknown) {  // todo: check if this is the correct way to check for link status
+  //   D_println("[ETH]: Failed to configure Ethernet");
+
+  //   eth_mqtt_connected = false;
+  // }
+
   delay(1000);
 
-  Serial.print("[ETH]: IP Address : ");
-  Serial.println(Ethernet.localIP());
+  D_print("[ETH]: IP Address : ");
+  D_println(Ethernet.localIP());
 }

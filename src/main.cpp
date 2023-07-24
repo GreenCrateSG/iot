@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+Hydro junction_box;
+
 EthernetClient ethClient;
 MQTTClient mqttClient;
 
@@ -31,6 +33,8 @@ unsigned long poll_delay = 10000;  // 2000 - (reading_delay * 2) - 300;  // how 
 
 bool polling = true;  // variable to determine whether or not were polling the circuits
 
+bool eth_mqtt_connected = false;  // ethernet connection status
+
 // gets the length of the array automatically so we dont have to change the number every time we add new boards
 const uint8_t device_list_len = sizeof(device_list) / sizeof(device_list[0]);
 
@@ -43,7 +47,7 @@ Sequencer4 Seq(&step1, reading_delay,  // calls the steps in sequence with time 
 
 void setup() {
   gpio_init();
-  Serial.begin(9600);
+  D_SerialBegin(9600);
   scan_devices();
 
   ethernet_init();
@@ -54,7 +58,7 @@ void setup() {
   temperature_sensor_init();
 
   Seq.reset();
-  Serial.println("[DEBUG]: Setup Completed!\n");
+  D_println("[DEBUG]: Setup Completed!\n");
 }
 
 void loop() {
@@ -97,7 +101,7 @@ void step2() {
     EC.send_cmd_with_num("T,", 25.0);
   }
 
-  Serial.print(" ");
+  D_print(" ");
 }
 
 void step3() {
@@ -113,12 +117,12 @@ void step4() {
     mqtt_publish(PH_TOPIC, String(PH.get_last_received_reading()).c_str());
     // client.publish(PH_TOPIC, String(PH.get_last_received_reading()).c_str());
   }
-  Serial.print("  ");
+  D_print("  ");
   receive_and_print_reading(EC);               // get the reading from the EC circuit
   if (EC.get_error() == Ezo_board::SUCCESS) {  // if the EC reading was successful (back in step 1)
     mqtt_publish(EC_TOPIC, String(EC.get_last_received_reading()).c_str());
     // client.publish(EC_TOPIC, String(EC.get_last_received_reading()).c_str());
   }
 
-  Serial.println();
+  D_println();
 }

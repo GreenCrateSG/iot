@@ -4,6 +4,8 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
+// #include "../class/hydro.h"
+#include "../debug/debug.h"
 #include "../mqtt/mqtt_local.h"
 
 #define DHTTYPE DHT11   // DHT 11

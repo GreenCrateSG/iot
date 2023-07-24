@@ -5,6 +5,8 @@
 #include <MQTT.h>
 #include <Wire.h>
 
+#include "../debug/debug.h"
+
 /**  Ethernet  **/
 #define W5200_nSCS 10
 #define W5200_nRST 8
