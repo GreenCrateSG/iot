@@ -1,6 +1,7 @@
 #include "main.h"
 
 #include <Arduino.h>
+#include <ArduinoOTA.h>
 
 Hydro junction_box;
 
@@ -40,6 +41,8 @@ const uint8_t device_list_len = sizeof(device_list) / sizeof(device_list[0]);
 
 Sequencer1 Mqtt_Seq(&mqtt_loop_check, 10000);  // calls the eth and mqtt reconnect function every 10 seconds
 
+Sequencer1 Ota_Seq(&ota_check, 1000);  // calls the OTA check function every second
+
 Sequencer4 Seq(&step1, reading_delay,  // calls the steps in sequence with time in between them
                &step2, 300,
                &step3, reading_delay,
@@ -57,12 +60,19 @@ void setup() {
   lux_sensor_init(tslOne, tslTwo);
   temperature_sensor_init();
 
+  Mqtt_Seq.run();
+  Ota_Seq.run();
   Seq.reset();
+
+  // Initialize OTA
+  ArduinoOTA.begin(Ethernet.localIP(), MQTTUSER, MQTTPASSWORD, InternalStorage);
+
   D_println("[DEBUG]: Setup Completed!\n");
 }
 
 void loop() {
   Mqtt_Seq.run();
+  Ota_Seq.run();
 
   if (polling == true) {  // if polling is turned on, run the sequencer
     Seq.run();
@@ -76,6 +86,10 @@ void loop() {
 
   //   delay(1000);
   // }
+}
+
+void ota_check() {
+  ArduinoOTA.poll();
 }
 
 void step1() {

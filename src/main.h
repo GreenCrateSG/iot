@@ -18,6 +18,7 @@
 
 unsigned long lastMillis = 0;  // counter
 
+void ota_check();
 void step1();  // forward declarations of functions to use them in the sequencer before defining them
 void step2();
 void step3();
