@@ -21,22 +21,22 @@ extern bool eth_mqtt_connected;
 
 int _counter = 10;
 
-void mqtt_callback(char* topic, byte* payload, unsigned int length) {
+void mqtt_callback(String& topic, String& payload) {
   // handle message arrived
+  D_println("[MQTT]: incoming: " + topic + " - " + payload);
+  topic.remove(0, strlen(TOPIC_API) - 1);  // remove the first character of the topic ("arduino/"
 
-  D_println("[MQTT]: callback");
-
-  // Check if the received topic starts with the base topic "hydroponics"
+  // Check if the received topic starts with the base topic "arduino"
   if (String(topic).startsWith(TOPIC_CMND)) {
     // Extract the subtopic after the base topic
-    String subtopic = String(topic).substring(strlen(TOPIC_CMND));
-    command_callback(subtopic.c_str(), junction_box);
+    String subtopic = String(topic).substring(strlen(TOPIC_CMND) + 1);
+    command_callback(subtopic, payload, junction_box);
   } else if (String(topic).startsWith(TOPIC_STAT)) {
-    String subtopic = String(topic).substring(strlen(TOPIC_STAT));
-    status_callback(subtopic.c_str(), junction_box);
+    String subtopic = String(topic).substring(strlen(TOPIC_STAT) + 1);
+    status_callback(subtopic, payload, junction_box);
   } else if (String(topic).startsWith(TOPIC_TELE)) {
-    String subtopic = String(topic).substring(strlen(TOPIC_TELE));
-    telemetry_callback(subtopic.c_str(), junction_box);
+    String subtopic = String(topic).substring(strlen(TOPIC_TELE) + 1);
+    telemetry_callback(subtopic, payload, junction_box);
   }
 }
 
@@ -53,25 +53,16 @@ void mqtt_connect() {
     return;
   } else {
     eth_mqtt_connected = true;
+    mqttClient.subscribe(TOPIC_API, QoS_2);
     D_println("\n[MQTT]: connected!");
   }
 
-  // client.subscribe("/arduino");
   // client.unsubscribe("/hello");
-}
-
-void mqtt_messageReceived(String& topic, String& payload) {
-  D_println("[MQTT]: incoming: " + topic + " - " + payload);
-
-  // Note: Do not use the client in the callback to publish, subscribe or
-  // unsubscribe as it may cause deadlocks when other things arrive while
-  // sending and receiving acknowledgments. Instead, change a global variable,
-  // or push to a queue and handle it in the loop after calling `client.loop()`.
 }
 
 void mqtt_init() {
   mqttClient.begin(mqtt_server, port, ethClient);
-  mqttClient.onMessage(mqtt_messageReceived);
+  mqttClient.onMessage(mqtt_callback);
   delay(1000);
   mqtt_connect();
 }

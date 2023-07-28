@@ -4,8 +4,8 @@
 
 #include "../class/hydro.h"
 
-void command_callback(String subtopic, Hydro hydro);
-void status_callback(String subtopic, Hydro hydro);
-void telemetry_callback(String subtopic, Hydro hydro);
+void command_callback(String& subtopic, String& payload, Hydro& hydro);
+void status_callback(String& subtopic, String& payload, Hydro& hydro);
+void telemetry_callback(String& subtopic, String& payload, Hydro& hydro);
 
 #endif  // CALLBACK_COMMAND_H

@@ -10,9 +10,10 @@
 /** Topic **/
 
 // API
-#define TOPIC_CMND "cmnd"  // command
-#define TOPIC_STAT "stat"  // status
-#define TOPIC_TELE "tele"  // telemetry
+#define TOPIC_API "arduino/#"  // <- any topic related to arduino
+#define TOPIC_CMND "cmnd"      // command
+#define TOPIC_STAT "stat"      // status
+#define TOPIC_TELE "tele"      // telemetry
 
 #define DHTTOP_TEMP_TOPIC "sensor/dhttop/temperature"
 #define DHTTOP_HUM_TOPIC "sensor/dhttop/humidity"
@@ -30,12 +31,21 @@
 #define LOADVOLTAGE_TOPIC "sensor/loadvoltage"
 #define CURRENT_TOPIC "sensor/current"
 
+#define PH_TARGET_TOPIC "set/ph_target"
+#define EC_TARGET_TOPIC "set/ec_target"
+#define PH_SET_UPPER "set/ph_upper"
+#define PH_SET_LOWER "set/ph_lower"
+#define EC_SET_THRESHOLD "set/ec_threshold"
+
+#define PUMP_SET_TOPIC "set/pump"
+#define LIGHT_ONE_SET_TOPIC "set/light_one"
+#define LIGHT_TWO_SET_TOPIC "set/light_two"
+
 /****/
 
 void mqtt_init();
-void mqtt_callback(char* topic, byte* payload, unsigned int length);
+void mqtt_callback(String& topic, String& payload);
 void mqtt_connect();
-void mqtt_messageReceived(String& topic, String& payload);
 void mqtt_loop_check();
 void mqtt_publish(const char* topic, const char* payload);
 

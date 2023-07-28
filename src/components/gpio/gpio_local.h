@@ -7,10 +7,10 @@
 
 /** CONFIG **/
 
-#define L1 2
-#define L2 3
-#define L3 4
-#define L4 5
+#define PUMP 2
+#define L3 3
+#define L2 4
+#define L1 5
 
 #define M1_IN1 14
 #define M1_IN2 15
@@ -27,5 +27,7 @@
 
 void gpio_init();
 void scan_devices();
+void light_control(uint8_t _pin, bool _val);
+void pump_control(bool _val);
 
 #endif

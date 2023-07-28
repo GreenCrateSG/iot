@@ -7,6 +7,9 @@ extern Hydro junction_box;
 DHT_Unified dhttop(DHTPINTOP, DHTTYPE);
 DHT_Unified dhtbottom(DHTPINBOTTOM, DHTTYPE);
 
+/**
+ * @brief Initializes the top temperature sensor module
+ */
 void temperature_sensor_init() {
   dhttop.begin();
   dhtbottom.begin();
@@ -14,6 +17,9 @@ void temperature_sensor_init() {
   // dhttop.temperature().getSensor(&sensor);
 }
 
+/**
+ * @brief Reads the top & bottom temperature sensor
+ */
 void temperature_sensor_reading() {
   // Delay between measurements.
   // delay(delayMS);
@@ -36,8 +42,8 @@ void temperature_sensor_reading() {
   } else {
     D_print(F("[SENSOR]: Top Humidity: "));
     D_print(event.relative_humidity);
-    junction_box.top_sensors.set_humidity(event.relative_humidity);
-    mqtt_publish(DHTTOP_HUM_TOPIC, String(junction_box.top_sensors.get_humidity()).c_str());
+    junction_box.top_sensors.set_hum(event.relative_humidity);
+    mqtt_publish(DHTTOP_HUM_TOPIC, String(junction_box.top_sensors.get_hum()).c_str());
     D_println(F("%"));
   }
 
@@ -59,8 +65,8 @@ void temperature_sensor_reading() {
     D_print(F("[SENSOR]: Bottom Humidity: "));
     D_print(event.relative_humidity);
     D_print(event.temperature);
-    junction_box.bottom_sensors.set_humidity(event.relative_humidity);
-    mqtt_publish(DHTBOT_HUM_TOPIC, String(junction_box.bottom_sensors.get_humidity()).c_str());
+    junction_box.bottom_sensors.set_hum(event.relative_humidity);
+    mqtt_publish(DHTBOT_HUM_TOPIC, String(junction_box.bottom_sensors.get_hum()).c_str());
     D_println(F("%"));
   }
 }

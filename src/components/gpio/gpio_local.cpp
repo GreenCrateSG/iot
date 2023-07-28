@@ -1,5 +1,8 @@
 #include "gpio_local.h"
 
+/**
+ * @brief Initializes the GPIO module
+ */
 void gpio_init() {
   // I2C
   Wire.begin();
@@ -8,7 +11,7 @@ void gpio_init() {
   pinMode(L1, OUTPUT);
   pinMode(L2, OUTPUT);
   pinMode(L3, OUTPUT);
-  pinMode(L4, OUTPUT);
+  pinMode(PUMP, OUTPUT);
 
   // m1
   pinMode(M1_IN1, OUTPUT);
@@ -29,10 +32,10 @@ void gpio_init() {
   pinMode(M6_IN2, OUTPUT);
 
   // light
+  digitalWrite(PUMP, LOW);
+  digitalWrite(L3, LOW);  // FIXME: ISSUE
+  digitalWrite(L2, LOW);
   digitalWrite(L1, LOW);
-  digitalWrite(L2, LOW);  // FIXME: ISSUE
-  digitalWrite(L3, LOW);
-  digitalWrite(L4, LOW);
 
   // m1
   digitalWrite(M1_IN1, LOW);  // TOP
@@ -53,6 +56,9 @@ void gpio_init() {
   digitalWrite(M6_IN2, LOW);
 }
 
+/**
+ * @brief Scans for I2C devices
+ */
 void scan_devices() {
   byte error, address;
   int nDevices;
@@ -92,9 +98,18 @@ void scan_devices() {
   // delay(1000);           // wait 5 seconds for next scan
 }
 
-void light_control(uint8_t _pin, uint8_t _val) {
-  if (_pin == L1 || _pin == L2 || _pin == L3 || _pin == L4) {
+/**
+ * @brief Controls the light
+ * @param _pin Light pin
+ * @param _val Light state
+ */
+void light_control(uint8_t _pin, bool _val) {
+  if (_pin == L1 || _pin == L2 || _pin == L3) {
     digitalWrite(_pin, _val);
   } else
     D_println("[GPIO]: Invalid pin for light control");
+}
+
+void pump_control(bool _val) {
+  digitalWrite(PUMP, _val);
 }

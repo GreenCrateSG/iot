@@ -28,10 +28,12 @@ void lux_sensor_reading(TSL2561 tslOne, TSL2561 tslTwo) {
   D_print("[SENSOR]: ");
   D_println(tslOne.getLuminosity(TSL2561_VISIBLE));
   junction_box.top_sensors.set_lux(tslOne.getLuminosity(TSL2561_VISIBLE));
-  mqtt_publish(LUXTOP_TOPIC, String(junction_box.top_sensors.get_lux()).c_str());
+  if (junction_box.top_sensors.get_lux() > 0)
+    mqtt_publish(LUXTOP_TOPIC, String(junction_box.top_sensors.get_lux()).c_str());
 
   D_print("[SENSOR]: ");
   D_println(tslTwo.getLuminosity(TSL2561_VISIBLE));
   junction_box.bottom_sensors.set_lux(tslTwo.getLuminosity(TSL2561_VISIBLE));
-  mqtt_publish(LUXBOT_TOPIC, String(junction_box.bottom_sensors.get_lux()).c_str());
+  if (junction_box.bottom_sensors.get_lux() > 0)
+    mqtt_publish(LUXBOT_TOPIC, String(junction_box.bottom_sensors.get_lux()).c_str());
 }

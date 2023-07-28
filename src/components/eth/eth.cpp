@@ -10,6 +10,10 @@ IPAddress dns(1, 1, 1, 1);
 
 extern bool eth_mqtt_connected;
 
+/**
+ * @brief Initializes the W5200 Ethernet module
+ * @param
+ */
 void DF_W5200_Init(void) {
   pinMode(W5200_nSCS, OUTPUT);
   pinMode(W5200_nRST, OUTPUT);
@@ -23,6 +27,10 @@ void DF_W5200_Init(void) {
   Ethernet.init(W5200_nSCS);
 }
 
+/**
+ * @brief Initializes the Ethernet module
+ * @param
+ */
 void ethernet_init() {
   DF_W5200_Init();
   Ethernet.begin(mac, ip, dns);
