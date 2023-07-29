@@ -40,36 +40,13 @@ class Sensors {
   ~Sensors() {}
 
   float get_temp() { return temp; }
-
   float get_hum() { return humidity; }
-
   uint16_t get_lux() { return lux; }
-
-  State set_temp(float _val) {
-    temp = _val;
-    return STATE_SUCCESS;
-  }
-
-  State set_hum(float _val) {
-    humidity = _val;
-    return STATE_SUCCESS;
-  }
-
-  State set_temp_hum(float _temp, float _humidity) {
-    temp = _temp;
-    humidity = _humidity;
-    return STATE_SUCCESS;
-  }
-
-  State set_lux(int _lux) {
-    lux = _lux;
-    return STATE_SUCCESS;
-  }
-
-  State serial_print() {
-    D_println(" ");  // todo
-    return STATE_SUCCESS;
-  }
+  State set_temp(float _val);
+  State set_hum(float _val);
+  State set_temp_hum(float _temp, float _humidity);
+  State set_lux(int _lux);
+  State serial_print();
 };
 
 /**
@@ -109,10 +86,7 @@ class Reservoir {
     return ec;
   }
 
-  State set_temp(float _temp) {
-    temp = _temp;
-    return STATE_SUCCESS;
-  }
+  State set_temp(float _temp);
 
   State set_ph(float _ph) {
     ph = _ph;

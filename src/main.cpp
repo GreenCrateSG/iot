@@ -19,10 +19,12 @@ Ezo_board PH = Ezo_board(99, "PH");     // create a PH circuit object, who's add
 Ezo_board EC = Ezo_board(100, "EC");    // create an EC circuit object who's address is 100 and name is "EC"
 Ezo_board RTD = Ezo_board(102, "RTD");  // create an RTD circuit object who's address is 102 and name is "RTD"
 
-Ezo_board device_list[] = {  // an array of boards used for sending commands to all or specific boards
+Ezo_board device_list[] = {
+    // an array of boards used for sending commands to all or specific boards
     PH,
     EC,
-    RTD};
+    RTD,
+};
 
 Ezo_board* default_board = &device_list[0];  // used to store the board were talking to
 
