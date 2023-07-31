@@ -5,6 +5,7 @@
 #include <MQTT.h>
 
 #include "../../arduino_sercret.h"
+#include "../class/hydro.h"
 #include "../debug/debug.h"
 
 /** Topic **/
@@ -44,7 +45,7 @@
 /****/
 
 void mqtt_init();
-void mqtt_callback(String& topic, String& payload);
+void mqtt_callback(String& topic, String& payload, Hydro& junction_box);
 void mqtt_connect();
 void mqtt_loop_check();
 void mqtt_publish(const char* topic, const char* payload);

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef HYDRO_H
 
 #include <Arduino.h>
@@ -8,8 +10,8 @@
 /**
  * @brief Enum for state return values
  */
-enum State {
-  STATE_SUCCESS,
+enum State : uint8_t {
+  STATE_SUCCESS,  // 0
   STATE_FAIL
 };
 
@@ -20,7 +22,7 @@ enum State {
 class Sensors {
  private:
   float temp = 0.0;
-  float humidity = 0.0;
+  float hum = 0.0;
   int lux = 0;
 
  public:
@@ -31,20 +33,20 @@ class Sensors {
     set_lux(0);
   }
 
-  Sensors(float _temp, float _humidity, int _lux) {
+  Sensors(float _temp, float _hum, int _lux) {
     set_temp(_temp);
-    set_hum(_humidity);
+    set_hum(_hum);
     set_lux(_lux);
   }
 
   ~Sensors() {}
 
-  float get_temp() { return temp; }
-  float get_hum() { return humidity; }
+  float get_temp() { return temp; };
+  float get_hum() { return hum; };
   uint16_t get_lux() { return lux; }
   State set_temp(float _val);
   State set_hum(float _val);
-  State set_temp_hum(float _temp, float _humidity);
+  State set_temp_hum(float _temp, float _hum);
   State set_lux(int _lux);
   State serial_print();
 };
@@ -74,41 +76,14 @@ class Reservoir {
 
   ~Reservoir() {}
 
-  float get_temp() {
-    return temp;
-  }
-
-  float get_ph() {
-    return ph;
-  }
-
-  float get_ec() {
-    return ec;
-  }
-
+  float get_temp() { return temp; }
+  float get_ph() { return ph; }
+  float get_ec() { return ec; }
   State set_temp(float _temp);
-
-  State set_ph(float _ph) {
-    ph = _ph;
-    return STATE_SUCCESS;
-  }
-
-  State set_ec(float _ec) {
-    ec = _ec;
-    return STATE_SUCCESS;
-  }
-
-  State set_all(float _temp, float _ph, float _ec) {
-    temp = _temp;
-    ph = _ph;
-    ec = _ec;
-    return STATE_SUCCESS;
-  }
-
-  State serial_print() {
-    D_println(" ");  // todo
-    return STATE_SUCCESS;
-  }
+  State set_ph(float _ph);
+  State set_ec(float _ec);
+  State set_all(float _temp, float _ph, float _ec);
+  State serial_print();
 };
 
 // Main Class
@@ -145,70 +120,22 @@ class Hydro {
   void auto_dose() {}  // todo
 
   // Getters
-  float get_ph_upper_threshold() {
-    return ph_upper_threshold;
-  }
-
-  float get_ph_lower_threshold() {
-    return ph_lower_threshold;
-  }
-
-  float get_ec_threshold() {
-    return ec_threshold;
-  }
-
-  float get_ec_target() {
-    return ec_target;
-  }
-
-  float get_ph_target() {
-    return ph_target;
-  }
+  float get_ph_upper_threshold() { return ph_upper_threshold; }
+  float get_ph_lower_threshold() { return ph_lower_threshold; }
+  float get_ec_threshold() { return ec_threshold; }
+  float get_ec_target() { return ec_target; }
+  float get_ph_target() { return ph_target; }
 
   // Setters
-  State set_ph_upper_threshold(float _val) {
-    ph_upper_threshold = _val;
-    return STATE_SUCCESS;
-  }
-
-  State set_ph_lower_threshold(float _val) {
-    ph_lower_threshold = _val;
-    return STATE_SUCCESS;
-  }
-
-  State set_ec_threshold(float _val) {
-    ec_threshold = _val;
-    return STATE_SUCCESS;
-  }
-
-  State set_ec_target(float _val) {
-    ec_target = _val;
-    return STATE_SUCCESS;
-  }
-
-  State set_ph_target(float _val) {
-    ph_target = _val;
-    return STATE_SUCCESS;
-  }
-
-  void set_pump(bool _val) {
-    pump_control(_val);
-  }
-
-  void set_light_one(bool _val) {
-    light_control(L1, _val);
-  }
-
-  void set_light_two(bool _val) {
-    light_control(L2, _val);
-  }
-
-  State print() {
-    top_sensors.serial_print();
-    bottom_sensors.serial_print();
-    reservoir.serial_print();
-    return STATE_SUCCESS;
-  }
+  State set_ph_upper_threshold(float _val);
+  State set_ph_lower_threshold(float _val);
+  State set_ec_threshold(float _val);
+  State set_ec_target(float _val);
+  State set_ph_target(float _val);
+  void set_pump(bool _val);
+  void set_light_one(bool _val);
+  void set_light_two(bool _val);
+  State print();
 };
 
 #endif

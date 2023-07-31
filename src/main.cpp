@@ -47,6 +47,7 @@ Sequencer4 Seq(&step1, reading_delay,  // calls the steps in sequence with time 
                &step3, reading_delay,
                &step4, poll_delay);
 
+// Setup
 void setup() {
   gpio_init();
   D_SerialBegin(9600);
@@ -65,6 +66,7 @@ void setup() {
   D_println("[DEBUG]: Setup Completed!\n");
 }
 
+// Loop
 void loop() {
   Mqtt_Seq.run();
 
@@ -74,10 +76,8 @@ void loop() {
 
   // if (millis() - lastMillis > 5000) {
   //   lastMillis = millis();
-
   //   lux_sensor_reading(tslOne, tslTwo);
   //   temperature_sensor_reading();
-
   //   delay(1000);
   // }
 }
@@ -87,8 +87,8 @@ void step1() {
   // to let the library know to parse the reading
   RTD.send_read_cmd();
 
-  temperature_sensor_reading();
-  lux_sensor_reading(tslOne, tslTwo);
+  temperature_sensor_reading(junction_box);
+  lux_sensor_reading(tslOne, tslTwo, junction_box);
 }
 
 void step2() {

@@ -2,9 +2,11 @@
 
 #include <Arduino.h>
 
+#include "../eth/eth.h"
 #include "callback.h"
 
-extern Hydro junction_box;
+// global (old)
+// extern Hydro junction_box;
 
 // MQTT Config
 const char* mqtt_server = MQTT_SERVER;
@@ -21,7 +23,7 @@ extern bool eth_mqtt_connected;
 
 int _counter = 10;
 
-void mqtt_callback(String& topic, String& payload) {
+void mqtt_callback(String& topic, String& payload, Hydro& junction_box) {
   // handle message arrived
   D_println("[MQTT]: incoming: " + topic + " - " + payload);
   topic.remove(0, strlen(TOPIC_API) - 1);  // remove the first character of the topic ("arduino/"
@@ -50,6 +52,12 @@ void mqtt_connect() {
   if (_counter <= 0) {
     D_println("\n[MQTT]: connection failed!");
     eth_mqtt_connected = false;
+    _counter = 10;  // reset counter
+
+    ethClient.stop();
+    delay(1000);
+    ethernet_init();
+
     return;
   } else {
     eth_mqtt_connected = true;
@@ -68,15 +76,17 @@ void mqtt_init() {
 }
 
 void mqtt_loop_check() {
+  // todo: pump issue
   // D_println("[MQTT]: Loop Check");
 
-  if (eth_mqtt_connected) {  // check if connected
-    mqttClient.loop();
+  // if (eth_mqtt_connected) {  // check if connected
+  // ethClient.loop();
+  mqttClient.loop();
 
-    if (!mqttClient.connected()) {
-      mqtt_connect();
-    }
+  if (!mqttClient.connected()) {
+    mqtt_connect();
   }
+  // }
 }
 
 void mqtt_publish(const char* topic, const char* payload) {

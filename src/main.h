@@ -9,7 +9,7 @@
 #include <sequencer1.h>  //imports a 1 function sequencer
 #include <sequencer4.h>  //imports a 4 function sequencer
 
-#include "components/class/hydro.h"
+
 #include "components/debug/debug.h"
 #include "components/eth/eth.h"
 #include "components/gpio/gpio_local.h"

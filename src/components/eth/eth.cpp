@@ -34,6 +34,28 @@ void DF_W5200_Init(void) {
 void ethernet_init() {
   DF_W5200_Init();
   Ethernet.begin(mac, ip, dns);
+
+  // Check for Ethernet hardware present
+  if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+    D_println("Ethernet shield was not found :(");
+    while (true) {  // hang
+      delay(1);     // do nothing, no point running without Ethernet hardware
+    }
+  }
+
+  auto link = Ethernet.linkStatus();
+  D_print("Link status: ");
+  switch (link) {
+    case Unknown:
+      D_println("Unknown");
+      break;
+    case LinkON:
+      D_println("ON");
+      break;
+    case LinkOFF:
+      D_println("OFF");
+      break;
+  }
   // if (Ethernet.linkStatus() == Unknown) {  // todo: check if this is the correct way to check for link status
   //   D_println("[ETH]: Failed to configure Ethernet");
 

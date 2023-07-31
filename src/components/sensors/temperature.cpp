@@ -2,13 +2,15 @@
 
 #include "../class/hydro.h"
 
-extern Hydro junction_box;
+// extern Hydro junction_box;
 
 DHT_Unified dhttop(DHTPINTOP, DHTTYPE);
 DHT_Unified dhtbottom(DHTPINBOTTOM, DHTTYPE);
 
+// Todo: Issue passing DHT obj
+
 /**
- * @brief Initializes the top temperature sensor module
+ * @brief Initializes the top & bottom temperature sensor module
  */
 void temperature_sensor_init() {
   dhttop.begin();
@@ -20,9 +22,7 @@ void temperature_sensor_init() {
 /**
  * @brief Reads the top & bottom temperature sensor
  */
-void temperature_sensor_reading() {
-  // Delay between measurements.
-  // delay(delayMS);
+void temperature_sensor_reading(Hydro& junction_box) {
   // Get temperature event and print its value.
   sensors_event_t event;
   dhttop.temperature().getEvent(&event);
