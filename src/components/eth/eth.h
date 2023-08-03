@@ -1,4 +1,5 @@
 #ifndef ETH_H
+#define ETH_H
 
 #include <Arduino.h>
 #include <Ethernet.h>

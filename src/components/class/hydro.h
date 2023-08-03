@@ -1,6 +1,7 @@
 #pragma once
 
 #ifndef HYDRO_H
+#define HYDRO_H
 
 #include <Arduino.h>
 
@@ -135,6 +136,8 @@ class Hydro {
   void set_pump(bool _val);
   void set_light_one(bool _val);
   void set_light_two(bool _val);
+  void set_solution_a_motor(bool _val);
+  void set_solution_b_motor(bool _val);
   State print();
 };
 

@@ -1,4 +1,5 @@
 #ifndef MQTT_LOCAL_H
+#define MQTT_LOCAL_H
 
 #include <Arduino.h>
 #include <Ethernet.h>
@@ -42,6 +43,8 @@
 #define LIGHT_ONE_SET_TOPIC "set/light_one"
 #define LIGHT_TWO_SET_TOPIC "set/light_two"
 
+#define MOTOR_A_SET_TOPIC "set/motor_a"
+#define MOTOR_B_SET_TOPIC "set/motor_b"
 /****/
 
 void mqtt_init();

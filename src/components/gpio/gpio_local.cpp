@@ -103,7 +103,7 @@ void scan_devices() {
  * @param _pin Light pin
  * @param _val Light state
  */
-void light_control(uint8_t _pin, bool _val) {
+void light_control(light_pin _pin, bool _val) {
   if (_pin == L1 || _pin == L2 || _pin == L3) {
     digitalWrite(_pin, _val);
   } else
@@ -112,4 +112,14 @@ void light_control(uint8_t _pin, bool _val) {
 
 void pump_control(bool _val) {
   digitalWrite(PUMP, _val);
+}
+
+void motor_control(motor_pin _pin_one, motor_pin _pin_two, bool _val) {
+  if (_val) {  // turn on
+    digitalWrite(_pin_one, true);
+    digitalWrite(_pin_two, false);
+  } else {
+    digitalWrite(_pin_one, false);
+    digitalWrite(_pin_two, false);
+  }
 }

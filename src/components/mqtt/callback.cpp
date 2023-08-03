@@ -32,17 +32,27 @@ void command_callback(String& subtopic, String& payload, Hydro& hydro) {
       hydro.set_pump(true);
     else
       hydro.set_pump(false);
-  } else if (subtopic == LIGHT_ONE_SET_TOPIC)
+  } else if (subtopic == LIGHT_ONE_SET_TOPIC) {
     if (payload == "true")
       hydro.set_light_one(true);
     else
       hydro.set_light_one(false);
-  else if (subtopic == LIGHT_TWO_SET_TOPIC)
+  } else if (subtopic == LIGHT_TWO_SET_TOPIC) {
     if (payload == "true")
       hydro.set_light_two(true);
     else
       hydro.set_light_two(false);
-  else
+  } else if (subtopic == MOTOR_A_SET_TOPIC) {
+    if (payload == "true")
+      hydro.set_solution_a_motor(true);
+    else
+      hydro.set_solution_a_motor(false);
+  } else if (subtopic == MOTOR_B_SET_TOPIC) {
+    if (payload == "true")
+      hydro.set_solution_b_motor(true);
+    else
+      hydro.set_solution_b_motor(false);
+  } else
     mqtt_publish(_str.c_str(), "Error");
 }
 

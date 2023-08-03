@@ -1,4 +1,6 @@
 #ifndef LUX_H
+#define LUX_H
+
 #include <Arduino.h>
 
 #include "../class/hydro.h"
