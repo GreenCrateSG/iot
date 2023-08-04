@@ -99,9 +99,16 @@ void telemetry_callback(String& subtopic, String& payload, Hydro& hydro) {
 void status_callback(String& subtopic, String& payload, Hydro& hydro) {
   D_println("[MQTT]: status");
 
-  _str = String("/");
+  _str = String();  // clear string
+  _str += subtopic;
+  _str += "/";
   _str += TOPIC_STAT;
-  subtopic.concat(_str);
 
-  mqtt_publish(subtopic.c_str(), "OK");
+  if (subtopic == AUTO_NUTRITION_DOSE)
+    if (hydro.reservoir.get_ec() < hydro.get_ec_threshold())
+      mqtt_publish(_str.c_str(), "true");
+    else
+      mqtt_publish(_str.c_str(), "false");
+  else
+    mqtt_publish(subtopic.c_str(), "OK");
 }

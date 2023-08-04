@@ -212,3 +212,9 @@ State Hydro::print() {
   reservoir.serial_print();
   return STATE_SUCCESS;
 }
+
+
+State Hydro::auto_nutrition_dose()
+{
+  
+}

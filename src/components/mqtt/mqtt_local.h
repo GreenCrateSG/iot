@@ -45,6 +45,8 @@
 
 #define MOTOR_A_SET_TOPIC "set/motor_a"
 #define MOTOR_B_SET_TOPIC "set/motor_b"
+
+#define AUTO_NUTRITION_DOSE "auto_nutrition_dose"
 /****/
 
 void mqtt_init();

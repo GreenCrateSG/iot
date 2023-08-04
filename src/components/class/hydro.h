@@ -99,6 +99,11 @@ class Hydro {
   float ec_target = 2.4;  // Target EC value
   float ph_target = 6.2;  // Target pH value
 
+  float reservoir_volume = 135000 * 0.5;  // volume of reservoir (ml)
+  float flowrate_perastatic_pump = 45;    // ml/min
+  float nutrition_concentration = 200;    // 5ml per 1000ml
+  float amount_of_nutrition_needed = reservoir_volume / nutrition_concentration;
+
  public:
   Hydro() {}
   Hydro(float _ph_upper_threshold, float _ph_lower_threshold, float _ec_threshold, float _ec_target, float _ph_target) {
@@ -118,7 +123,7 @@ class Hydro {
 
   Reservoir reservoir = Reservoir();
 
-  void auto_dose() {}  // todo
+  State auto_nutrition_dose();  // todo
 
   // Getters
   float get_ph_upper_threshold() { return ph_upper_threshold; }

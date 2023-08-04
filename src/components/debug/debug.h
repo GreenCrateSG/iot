@@ -1,7 +1,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#define DEBUG 0  // SET TO 0 OUT TO REMOVE TRACES
+#define DEBUG 0  // SET TO 0 OUT TO REMOVE SERIAL PRINT
 
 #if DEBUG
 #define D_SerialBegin(...) Serial.begin(__VA_ARGS__);
