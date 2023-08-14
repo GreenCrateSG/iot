@@ -49,18 +49,18 @@ Sequencer4 Seq(&step1, reading_delay,  // calls the steps in sequence with time 
 
 // Setup
 void setup() {
-  gpio_init();
-  D_SerialBegin(9600);
-  scan_devices();
+  gpio_init();          // init GPIO
+  D_SerialBegin(9600);  // serial print
+  scan_devices();       // scan current i2c connection
 
-  ethernet_init();
-  mqtt_init();
+  ethernet_init();  // init eth shield
+  mqtt_init();      // init mqtt connection
 
   // Sensor Init
-  lux_sensor_init(tslOne, tslTwo);
-  temperature_sensor_init();
+  lux_sensor_init(tslOne, tslTwo);  // lux init
+  temperature_sensor_init();        // temperature init
 
-  Mqtt_Seq.run();
+  Mqtt_Seq.reset();
   Seq.reset();
 
   D_println("[DEBUG]: Setup Completed!\n");
@@ -82,15 +82,23 @@ void loop() {
   // }
 }
 
+/**
+ * @brief inform temperature probe to update reading
+ */
 void step1() {
   // send a read command. we use this command instead of RTD.send_cmd("R");
-  // to let the library know to parse the reading
   RTD.send_read_cmd();
 
+  // get top & bottom temperature reading
   temperature_sensor_reading(junction_box);
+
+  // get top & bottom lux reading
   lux_sensor_reading(tslOne, tslTwo, junction_box);
 }
 
+/**
+ * @brief  get temperature probe and publish to mqtt
+ */
 void step2() {
   receive_and_print_reading(RTD);  // get the reading from the RTD circuit
 
@@ -110,6 +118,9 @@ void step2() {
   D_print(" ");
 }
 
+/**
+ * @brief  Send command to get PH & EC probe
+ */
 void step3() {
   // send a read command. we use this command instead of PH.send_cmd("R");
   // to let the library know to parse the reading
@@ -117,6 +128,9 @@ void step3() {
   EC.send_read_cmd();
 }
 
+/**
+ * @brief  get PH & EC probe and publish to mqtt
+ */
 void step4() {
   receive_and_print_reading(PH);               // get the reading from the PH circuit
   if (PH.get_error() == Ezo_board::SUCCESS) {  // if the PH reading was successful (back in step 1)

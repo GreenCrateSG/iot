@@ -23,6 +23,13 @@ extern bool eth_mqtt_connected;
 
 int _counter = 10;
 
+/**
+ * @brief MQTT Callback
+ *
+ * @param topic main topic
+ * @param payload  message payload
+ * @param junction_box maintain the state of the junction box
+ */
 void mqtt_callback(String& topic, String& payload, Hydro& junction_box) {
   // handle message arrived
   D_println("[MQTT]: incoming: " + topic + " - " + payload);
@@ -42,6 +49,9 @@ void mqtt_callback(String& topic, String& payload, Hydro& junction_box) {
   }
 }
 
+/**
+ * @brief Connect to MQTT per 10 tries (reset ehternet if failed)
+ */
 void mqtt_connect() {
   D_print("[MQTT]: connecting...");
   while (!mqttClient.connect("arduino", mqttUser, mqttPassword) && _counter-- > 0) {
@@ -68,6 +78,9 @@ void mqtt_connect() {
   // client.unsubscribe("/hello");
 }
 
+/**
+ * @brief Initialize MQTT
+ */
 void mqtt_init() {
   mqttClient.begin(mqtt_server, port, ethClient);
   mqttClient.onMessage(mqtt_callback);
@@ -75,6 +88,10 @@ void mqtt_init() {
   mqtt_connect();
 }
 
+/**
+ * @brief Check if MQTT is connected
+ *
+ */
 void mqtt_loop_check() {
   // todo: pump issue
   // D_println("[MQTT]: Loop Check");
@@ -89,6 +106,12 @@ void mqtt_loop_check() {
   // }
 }
 
+/**
+ * @brief publish to mqtt with parameters
+ *
+ * @param topic main topic
+ * @param payload message
+ */
 void mqtt_publish(const char* topic, const char* payload) {
   sprintf(msgBuffer, payload);
 

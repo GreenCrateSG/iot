@@ -12,7 +12,7 @@ extern bool eth_mqtt_connected;
 
 /**
  * @brief Initializes the W5200 Ethernet module
- * @param
+ *
  */
 void DF_W5200_Init(void) {
   pinMode(W5200_nSCS, OUTPUT);
@@ -29,7 +29,7 @@ void DF_W5200_Init(void) {
 
 /**
  * @brief Initializes the Ethernet module
- * @param
+ *
  */
 void ethernet_init() {
   DF_W5200_Init();
